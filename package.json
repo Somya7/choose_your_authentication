@@ -1,0 +1,22 @@
+{
+  "name": "choose-your-authentication",
+  "private": true,
+  "description": "Learn authentication by building — one method at a time",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @cyoa/api\" \"npm run dev -w @cyoa/web\"",
+    "dev:api": "npm run dev -w @cyoa/api",
+    "dev:web": "npm run dev -w @cyoa/web",
+    "build": "npm run build -w @cyoa/api && npm run build -w @cyoa/web",
+    "typecheck": "npm run typecheck -w @cyoa/api && npm run typecheck -w @cyoa/web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
