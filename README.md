@@ -42,9 +42,9 @@ npm run dev
 
 | # | Method | Status |
 |---|--------|--------|
-| 1 | Username + password (hashed) | Not started |
-| 2 | Session cookies | Not started |
-| 3 | JWT access + refresh tokens | Not started |
+| 1 | Username + password (hashed) | Complete |
+| 2 | Session cookies | Complete |
+| 3 | JWT access + refresh tokens | Up next |
 | 4 | OAuth 2.0 / OIDC (social login) | Not started |
 | 5 | Magic link / email OTP | Not started |
 | 6 | WebAuthn / Passkeys | Not started |
@@ -52,6 +52,10 @@ npm run dev
 | 8 | API keys (service auth) | Not started |
 
 See [docs/auth-types.md](./docs/auth-types.md) for details on each method.
+
+**Project 1 walkthrough:** [docs/projects/01-password-auth.md](./docs/projects/01-password-auth.md)
+
+**Project 2 walkthrough:** [docs/projects/02-session-cookies.md](./docs/projects/02-session-cookies.md)
 
 ## Scripts
 

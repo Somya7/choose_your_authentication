@@ -29,6 +29,30 @@ export interface HealthResponse {
 
 export interface MeResponse {
   user: User | null;
+  csrfToken?: string;
+}
+
+export interface SessionCookieInfo {
+  name: string;
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: string;
+  maxAgeMs: number;
+}
+
+export interface SessionInfoResponse {
+  authenticated: boolean;
+  session: {
+    createdAt: string | null;
+    expiresInMs: number;
+    storage: "sqlite";
+  };
+  cookie: SessionCookieInfo;
+  csrf: {
+    enabled: boolean;
+    header: string;
+    tokenPresent: boolean;
+  };
 }
 
 export interface NotesResponse {
@@ -52,4 +76,9 @@ export interface LoginRequest {
 
 export interface AuthResponse {
   user: User;
+  csrfToken: string;
+}
+
+export interface CreateNoteResponse {
+  note: Note;
 }

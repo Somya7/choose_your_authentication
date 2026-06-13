@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 
 const LEARNING_PATH = [
-  { step: 1, name: "Username + password", status: "next" },
-  { step: 2, name: "Session cookies", status: "planned" },
-  { step: 3, name: "JWT access + refresh", status: "planned" },
+  { step: 1, name: "Username + password", status: "done" as const },
+  { step: 2, name: "Session cookies", status: "done" as const },
+  { step: 3, name: "JWT access + refresh", status: "next" as const },
   { step: 4, name: "OAuth 2.0 / OIDC", status: "planned" },
   { step: 5, name: "Magic link / OTP", status: "planned" },
   { step: 6, name: "WebAuthn / Passkeys", status: "planned" },
@@ -78,7 +78,13 @@ export function HomePage() {
             <li key={item.step}>
               <span>{item.step}.</span>
               <span>{item.name}</span>
-              <span className="badge">{item.status === "next" ? "Up next" : "Planned"}</span>
+              <span className={`badge${item.status === "done" ? " done" : ""}`}>
+                {item.status === "done"
+                  ? "Complete"
+                  : item.status === "next"
+                    ? "Up next"
+                    : "Planned"}
+              </span>
             </li>
           ))}
         </ul>

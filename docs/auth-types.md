@@ -9,14 +9,14 @@ Proves identity via something the user **knows**.
 
 | Method | Description | Project |
 |--------|-------------|---------|
-| Username + password | Classic credentials; passwords stored as salted hashes | `01-password-auth` (planned) |
+| Username + password | Classic credentials; passwords stored as salted hashes | `01-password-auth` (complete) |
 
 ### Session & token-based
 Proves identity via a **credential issued after login**.
 
 | Method | Description | Project |
 |--------|-------------|---------|
-| Session cookies | Server-side session; browser holds session ID in HttpOnly cookie | `02-session-cookies` (planned) |
+| Session cookies | Server-side session; browser holds session ID in HttpOnly cookie | `02-session-cookies` (complete) |
 | JWT | Stateless signed tokens; access + refresh token pattern | `03-jwt` (planned) |
 
 ### Delegated / federated
