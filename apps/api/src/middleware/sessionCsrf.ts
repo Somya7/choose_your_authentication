@@ -1,25 +1,21 @@
+/**
+ * Project 2 — CSRF protection for session-cookie auth only.
+ * JWT Bearer tokens are not auto-sent by browsers, so they don't need CSRF.
+ */
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "./errorHandler.js";
 
-const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const MUTATING = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
-const CSRF_EXEMPT_PATHS = new Set([
-  "/api/auth/register",
-  "/api/auth/login",
-]);
+/** Paths exempt from CSRF — no session exists yet at login/register time. */
+const EXEMPT = new Set(["/register", "/login"]);
 
-export function validateCsrf(
+export function validateSessionCsrf(
   req: Request,
   _res: Response,
   next: NextFunction,
 ): void {
-  if (!MUTATING_METHODS.has(req.method)) {
-    next();
-    return;
-  }
-
-  // authRouter is mounted at /api/auth — req.path is relative to mount
-  if (CSRF_EXEMPT_PATHS.has(req.path)) {
+  if (!MUTATING.has(req.method) || EXEMPT.has(req.path)) {
     next();
     return;
   }
@@ -37,7 +33,7 @@ export function validateCsrf(
       new AppError(
         403,
         "CSRF_INVALID",
-        "Invalid or missing CSRF token — fetch a fresh token after login",
+        "Invalid or missing CSRF token",
       ),
     );
     return;

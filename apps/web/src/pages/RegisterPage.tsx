@@ -1,9 +1,12 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useAuthMethod } from "../context/AuthMethodContext";
 
 export function RegisterPage() {
   const { register } = useAuth();
+  const { methods, authMethod } = useAuthMethod();
+  const methodName = methods.find((m) => m.id === authMethod)?.name;
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +32,8 @@ export function RegisterPage() {
     <div className="card auth-card">
       <h2>Create account</h2>
       <p className="muted">
-        Your password is hashed with bcrypt before it touches the database.
+        Registering with <strong>{methodName}</strong>. Password hashed with
+        bcrypt before storage.
       </p>
 
       <form className="form" onSubmit={handleSubmit}>

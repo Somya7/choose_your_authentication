@@ -1,8 +1,9 @@
 import { FormEvent, useEffect, useState } from "react";
 import type { Note } from "@cyoa/shared";
-import { api } from "../lib/api";
+import { useAuthMethod } from "../context/AuthMethodContext";
 
 export function NotesPage() {
+  const { client } = useAuthMethod();
   const [notes, setNotes] = useState<Note[]>([]);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -14,8 +15,7 @@ export function NotesPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await api.notes();
-      setNotes(data.notes);
+      setNotes(await client.getNotes());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load notes");
     } finally {
@@ -25,7 +25,7 @@ export function NotesPage() {
 
   useEffect(() => {
     loadNotes();
-  }, []);
+  }, [client]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -33,8 +33,8 @@ export function NotesPage() {
     setError("");
 
     try {
-      const data = await api.createNote({ title, body });
-      setNotes((current) => [data.note, ...current]);
+      const note = await client.createNote({ title, body });
+      setNotes((current) => [note, ...current]);
       setTitle("");
       setBody("");
     } catch (err) {
@@ -48,6 +48,10 @@ export function NotesPage() {
     <>
       <div className="card">
         <h2>New note</h2>
+        <p className="muted">
+          Notes are scoped to the active auth method — session and JWT maintain
+          separate login states.
+        </p>
         <form className="form" onSubmit={handleSubmit}>
           <label className="field">
             <span>Title</span>

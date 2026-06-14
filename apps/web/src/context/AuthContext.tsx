@@ -8,7 +8,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { api, setCsrfToken } from "../lib/api";
+import { clearAllAuthState } from "../lib/auth";
+import { useAuthMethod } from "./AuthMethodContext";
 
 interface AuthContextValue {
   user: User | null;
@@ -21,40 +22,55 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { authMethod, client } = useAuthMethod();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Re-restore auth whenever the user switches auth method in the UI
   useEffect(() => {
-    api
-      .me()
-      .then((data) => {
-        setUser(data.user);
-        setCsrfToken(data.csrfToken ?? null);
-      })
-      .catch(() => {
-        setUser(null);
-        setCsrfToken(null);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    let cancelled = false;
 
-  const register = useCallback(async (email: string, password: string) => {
-    const data = await api.register({ email, password });
-    setUser(data.user);
-    setCsrfToken(data.csrfToken);
-  }, []);
+    async function restore() {
+      setLoading(true);
+      clearAllAuthState();
+      setUser(null);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const data = await api.login({ email, password });
-    setUser(data.user);
-    setCsrfToken(data.csrfToken);
-  }, []);
+      try {
+        const restored = await client.restore();
+        if (!cancelled) setUser(restored);
+      } catch {
+        if (!cancelled) setUser(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    restore();
+    return () => {
+      cancelled = true;
+    };
+  }, [authMethod, client]);
+
+  const register = useCallback(
+    async (email: string, password: string) => {
+      const u = await client.register(email, password);
+      setUser(u);
+    },
+    [client],
+  );
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const u = await client.login(email, password);
+      setUser(u);
+    },
+    [client],
+  );
 
   const logout = useCallback(async () => {
-    await api.logout();
+    await client.logout();
     setUser(null);
-    setCsrfToken(null);
-  }, []);
+  }, [client]);
 
   const value = useMemo(
     () => ({ user, loading, register, login, logout }),

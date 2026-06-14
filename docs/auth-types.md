@@ -17,7 +17,7 @@ Proves identity via a **credential issued after login**.
 | Method | Description | Project |
 |--------|-------------|---------|
 | Session cookies | Server-side session; browser holds session ID in HttpOnly cookie | `02-session-cookies` (complete) |
-| JWT | Stateless signed tokens; access + refresh token pattern | `03-jwt` (planned) |
+| JWT | Stateless signed tokens; access + refresh token pattern | `03-jwt` (complete) |
 
 ### Delegated / federated
 Proves identity via a **trusted third party**.

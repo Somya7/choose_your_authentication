@@ -1,9 +1,12 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useAuthMethod } from "../context/AuthMethodContext";
 
 export function LoginPage() {
   const { login } = useAuth();
+  const { methods, authMethod } = useAuthMethod();
+  const methodName = methods.find((m) => m.id === authMethod)?.name;
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +31,10 @@ export function LoginPage() {
   return (
     <div className="card auth-card">
       <h2>Log in</h2>
-      <p className="muted">Project 1 — verify your email and password.</p>
+      <p className="muted">
+        Using <strong>{methodName}</strong> — password verified with bcrypt,
+        then credentials issued via {authMethod === "session" ? "session cookie" : "JWT"}.
+      </p>
 
       <form className="form" onSubmit={handleSubmit}>
         <label className="field">

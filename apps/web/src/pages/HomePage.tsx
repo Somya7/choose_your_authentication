@@ -1,45 +1,37 @@
 import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-
-const LEARNING_PATH = [
-  { step: 1, name: "Username + password", status: "done" as const },
-  { step: 2, name: "Session cookies", status: "done" as const },
-  { step: 3, name: "JWT access + refresh", status: "next" as const },
-  { step: 4, name: "OAuth 2.0 / OIDC", status: "planned" },
-  { step: 5, name: "Magic link / OTP", status: "planned" },
-  { step: 6, name: "WebAuthn / Passkeys", status: "planned" },
-  { step: 7, name: "RBAC authorization", status: "planned" },
-  { step: 8, name: "API keys", status: "planned" },
-] as const;
+import { Link } from "react-router-dom";
+import { AuthMethodSelector } from "../components/AuthMethodSelector";
+import { useAuthMethod } from "../context/AuthMethodContext";
 
 export function HomePage() {
+  const { methods, authMethod } = useAuthMethod();
   const [apiStatus, setApiStatus] = useState<"loading" | "ok" | "error">(
     "loading",
   );
-  const [timestamp, setTimestamp] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [timestamp, setTimestamp] = useState("");
 
   useEffect(() => {
-    api
-      .health()
-      .then((data) => {
+    fetch("/api/health")
+      .then((r) => r.json())
+      .then((data: { timestamp: string }) => {
         setApiStatus("ok");
         setTimestamp(data.timestamp);
       })
-      .catch((err: Error) => {
-        setApiStatus("error");
-        setError(err.message);
-      });
+      .catch(() => setApiStatus("error"));
   }, []);
+
+  const available = methods.filter((m) => m.status === "available");
+  const comingSoon = methods.filter((m) => m.status === "coming-soon");
 
   return (
     <>
-      <div className="card">
-        <h2>Welcome</h2>
+      <div className="card hero-card">
+        <h2>Authentication playground</h2>
         <p className="muted">
-          A monorepo for learning authentication by building. Each project
-          implements a different auth method on the same Notes app.
+          Pick an auth method, log in, and compare how each one establishes
+          identity. All methods share the same Notes app but run independently.
         </p>
+        <AuthMethodSelector />
       </div>
 
       <div className="grid grid-2">
@@ -50,41 +42,54 @@ export function HomePage() {
             <>
               <p className="status-ok">Connected</p>
               <p className="muted">
-                Last health check: <code>{timestamp}</code>
+                Last check: <code>{timestamp}</code>
               </p>
             </>
           )}
           {apiStatus === "error" && (
-            <p className="error">
-              Could not reach API — run <code>npm run dev</code>. {error}
-            </p>
+            <p className="error">Could not reach API — run npm run dev</p>
           )}
         </div>
 
         <div className="card">
-          <h2>Stack</h2>
-          <ul className="muted">
-            <li>Express API on port 3001</li>
-            <li>React + Vite on port 5173</li>
-            <li>Shared TypeScript types in <code>@cyoa/shared</code></li>
-          </ul>
+          <h2>Active method</h2>
+          <p className="status-ok">
+            {methods.find((m) => m.id === authMethod)?.name}
+          </p>
+          <p className="muted">
+            Use the dropdown to switch. Each method has its own login session.
+          </p>
+          <Link to="/explore">Explore how it works →</Link>
         </div>
       </div>
 
       <div className="card">
-        <h2>Learning path</h2>
-        <ul className="learning-path">
-          {LEARNING_PATH.map((item) => (
-            <li key={item.step}>
-              <span>{item.step}.</span>
-              <span>{item.name}</span>
-              <span className={`badge${item.status === "done" ? " done" : ""}`}>
-                {item.status === "done"
-                  ? "Complete"
-                  : item.status === "next"
-                    ? "Up next"
-                    : "Planned"}
-              </span>
+        <h2>Available now</h2>
+        <ul className="method-list">
+          {available.map((m) => (
+            <li key={m.id} className={m.id === authMethod ? "active" : ""}>
+              <div>
+                <strong>{m.name}</strong>
+                <p className="muted">{m.description}</p>
+              </div>
+              {m.id === authMethod && (
+                <span className="badge done">Selected</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="card">
+        <h2>Coming soon</h2>
+        <ul className="method-list">
+          {comingSoon.map((m) => (
+            <li key={m.id}>
+              <div>
+                <strong>{m.name}</strong>
+                <p className="muted">{m.description}</p>
+              </div>
+              <span className="badge">Planned</span>
             </li>
           ))}
         </ul>

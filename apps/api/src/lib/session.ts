@@ -1,3 +1,7 @@
+/**
+ * Project 2 — Session cookie infrastructure
+ * Sessions are stored in SQLite; the browser only receives a session ID cookie.
+ */
 import type { Request } from "express";
 import session from "express-session";
 import crypto from "node:crypto";
@@ -22,12 +26,9 @@ export function sessionCookieOptions() {
 export const sessionMiddleware = session({
   store: new SqliteStore({
     client: db,
-    expired: {
-      clear: true,
-      intervalMs: 15 * 60 * 1000,
-    },
+    expired: { clear: true, intervalMs: 15 * 60 * 1000 },
   }),
-  secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
+  secret: process.env.SESSION_SECRET || "dev-session-secret-change-me",
   name: SESSION_COOKIE_NAME,
   resave: false,
   saveUninitialized: false,
@@ -38,6 +39,7 @@ export function createCsrfToken(): string {
   return crypto.randomBytes(32).toString("hex");
 }
 
+/** Called after login/register — stores userId + CSRF token in server session. */
 export function assignUserSession(req: Request, userId: string): string {
   req.session.userId = userId;
   req.session.createdAt = new Date().toISOString();
@@ -45,6 +47,7 @@ export function assignUserSession(req: Request, userId: string): string {
   return req.session.csrfToken;
 }
 
+/** Prevents session fixation — issue a new session ID after authentication. */
 export function regenerateSession(req: Request): Promise<void> {
   return new Promise((resolve, reject) => {
     req.session.regenerate((err) => {
@@ -55,11 +58,17 @@ export function regenerateSession(req: Request): Promise<void> {
 }
 
 export function ensureCsrfToken(req: Request): string | undefined {
-  if (!req.session.userId) {
-    return undefined;
-  }
+  if (!req.session.userId) return undefined;
   if (!req.session.csrfToken) {
     req.session.csrfToken = createCsrfToken();
   }
   return req.session.csrfToken;
+}
+
+export async function startSessionAuth(
+  req: Request,
+  userId: string,
+): Promise<string> {
+  await regenerateSession(req);
+  return assignUserSession(req, userId);
 }
